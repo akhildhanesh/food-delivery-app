@@ -17,12 +17,15 @@
     gap: 80px;
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 750px) {
     .footer-content {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 35px;
+    }
+
+    .footer-copyright {
+        text-align: center;
     }
 }
 
