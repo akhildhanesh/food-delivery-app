@@ -10,6 +10,7 @@ const StoreContextProvider = ({ children }) => {
     const [token, setToken] = useState(() => {
         return localStorage.getItem('token') || ''
     })
+    const [showLogin, setShowLogin] = useState(false)
 
     const fetchCart = () => {
         axios.get(`${API_URL}/api/cart/`, {
@@ -41,6 +42,11 @@ const StoreContextProvider = ({ children }) => {
     }, [token])
 
     const addToCart = async itemId => {
+        if (!token) {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+            setShowLogin(true)
+            return
+        }
         if (!cartItems[itemId]) {
             setCartItems(prev => ({ ...prev, [itemId]: 1 }))
         } else {
@@ -69,7 +75,7 @@ const StoreContextProvider = ({ children }) => {
     const getTotalCartAmount = () => {
         let totalAmount = 0
         for (const item in cartItems) {
-            const itemPrice = foodList.find(e => e._id === item).price
+            const itemPrice = foodList.find(e => e._id === item)?.price
             totalAmount += itemPrice * cartItems[item]
         }
         return totalAmount
@@ -83,7 +89,9 @@ const StoreContextProvider = ({ children }) => {
         token,
         setToken,
         foodList,
-        setFoodList
+        setFoodList,
+        setShowLogin,
+        showLogin
     }
 
     return (
