@@ -20,6 +20,12 @@ const StoreContextProvider = ({ children }) => {
         })
             .then(data => data.data.data)
             .then(setCartItems)
+            .catch(err => {
+                if (err.status === 401) {
+                    setShowLogin(true)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                }
+            })
     }
 
     const fetchItems = () => {
@@ -47,35 +53,53 @@ const StoreContextProvider = ({ children }) => {
             setShowLogin(true)
             return
         }
-        if (!cartItems[itemId]) {
-            setCartItems(prev => ({ ...prev, [itemId]: 1 }))
-        } else {
-            setCartItems(prev => ({ ...prev, [itemId]: prev[itemId] + 1 }))
-        }
-        if (token) {
-            await axios.post(`${API_URL}/api/cart/add`, { itemId }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
+        await axios.post(`${API_URL}/api/cart/add`, { itemId }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(() => {
+                if (!cartItems[itemId]) {
+                    setCartItems(prev => ({ ...prev, [itemId]: 1 }))
+                } else {
+                    setCartItems(prev => ({ ...prev, [itemId]: prev[itemId] + 1 }))
                 }
             })
-        }
+            .catch(err => {
+                if (err.status === 401) {
+                    setShowLogin(true)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
+                }
+            })
     }
 
     const removeFromCart = async itemId => {
-        setCartItems(prev => ({ ...prev, [itemId]: prev[itemId] > 0 ? prev[itemId] - 1 : 0 }))
-        if (token) {
-            await axios.post(`${API_URL}/api/cart/remove`, { itemId }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
+        if (!token) {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+            setShowLogin(true)
+            return
+        }
+        await axios.post(`${API_URL}/api/cart/remove`, { itemId }, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        })
+            .then(() => {
+                setCartItems(prev => ({ ...prev, [itemId]: prev[itemId] > 0 ? prev[itemId] - 1 : 0 }))
+            })
+            .catch(err => {
+                if (err.status === 401) {
+                    setShowLogin(true)
+                    window.scrollTo({ top: 0, behavior: 'smooth' })
                 }
             })
-        }
     }
 
     const getTotalCartAmount = () => {
         let totalAmount = 0
         for (const item in cartItems) {
             const itemPrice = foodList.find(e => e._id === item)?.price
+            console.log(itemPrice)
             totalAmount += itemPrice * cartItems[item]
         }
         return totalAmount
